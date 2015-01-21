@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Hacker's Monitor for XFCE</title>
+  <meta name="description" content="Network, CPU, RAM, Disk I/O and Temperature monitor for Linux XFCE"/>
+  <link rel="stylesheet" href="/css/default.css"/>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-58694315-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+</head>
+<body>
+
+<div class="navbar">
+<div class="left title"><a href="/">HOMEPAGE</a></div>
+<div class="center title"><a class="newtab" href="https://www.archlinux.org/" target="_blank"> Arch Linux </a></div>
+<div class="right title"><a href="https://github.com/lightful/xfce-hkmon/">XFCE-HKMON on GitHub</a></div>
+</div>
+
+<div class="full-height page">
+
+<img class="right" src="hkmon.png" alt="screenshot"/>
+
+<h2>Features</h2>
+
+<ul>
+
+<li>Low resources usage (about 0.26% CPU in a i5-2520M machine): fully written
+<span class="nowrap">in C++</span></li>
+
+<li>Text mode: only precise data, no rough fancy graphs</li>
+
+<li>Tiny size with the essential data but...</li>
+
+<li>... hugely extended information in the tooltip (see the picture) which still can be on top of every window
+while you type (of course provided the mouse remains over it)</li>
+
+<li>Smart: speed units change but are cleverly formatted. For example, it may commute
+<span class="nowrap">965 Kbps &#x2194; 1.100 Mbps</span>, while other monitors swap
+<span class="nowrap">965 Kbps &#x2194; 1.1 Mbps</span> (requiring your brain to track the label to perceive the
+speed direction, with the consequent delay potentially causing the data to change again before you catch it).</li>
+
+</ul>
+
+
+<h2>Installation</h2>
+
+<ol>
+
+<li>Download 
+<a class="nowrap newtab" href="https://github.com/lightful/xfce-hkmon/blob/master/xfce-hkmon.cpp"
+   target="_blank">xfce-hkmon.cpp</a>
+and compile it (you only need <span class="nowrap">gcc 4.6+</span> or clang installed):
+<code class="block">g++ -std=c++0x -O3 -lrt xfce-hkmon.cpp -o xfce-hkmon</code>
+</li>
+
+<li>Place the executable somewhere (e.g. <code>/usr/local/bin</code>)</li>
+
+<li>Add a XFCE Generic Monitor Applet (comes with most distros) with these settings: no label,
+one second refresh period, <em>Bitstream Vera Sans Mono</em> font (recommended a monospace font) and the
+following command:
+<code class="block">/usr/local/bin/xfce-hkmon NET CPU TEMP IO RAM</code>
+</li>
+
+</ol>
+
+
+<h2>Notes</h2>
+
+<ul>
+
+<li>The network interface shown in the panel is automatically selected (highest accumulated traffic). If you prefer
+another one, simply replace <code>NET</code> by its name (<code>eth0</code>, <code>ppp0</code>, etc) in the command
+line. The tooltip shows all the network interfaces with at least one byte transferred, and a mark signaling which
+one is being reported in the panel.</li>
+
+<li>Likewise, only physical disks with data transferred since boot are reported.</li>
+
+<li>If a device (network or disk) is moving a single byte of data, the related &#x25B3; or &#x25BD; arrow will turn
+black (meanwhile, the IO or bandwidth value reported may be shown as 0 under too little data transferred).</li>
+
+<li>The tooltip shows a CPU usage resume (all cores) and a brief breakdown by core. Values within parentheses are
+the accumulated usage since boot. The speed summary displayed at the top is weighted by real usage (thus it can run
+from a few MHz all the way to as many GHz as the number of cores available multiplied by their max clock).</li>
+
+<li>If a virtual machine is running, <em>guest</em> or <em>guest nice</em> CPU values will be reported showing its
+expenditure (on the other hand, if this monitor's computer runs inside a virtual machine, a <em>steal</em> value
+could be reported).</li>
+
+<li>The temperature shown in the panel area is the highest read among all cores and sockets (if there are several
+cores or sockets, the tooltip groups them reporting the max/min/avg instead)</li>
+
+<li>The command line arguments mostly select the tooltip verbosity (RAM will be shown in the panel in place of the
+temperature when omitted, though). Old XFCE versions may not show the tooltip contents (only the application binary
+path) if too much data is on it.</li>
+
+<li>The application writes temporary data in shared memory (SSD friendly) usually in
+<code>/run/user/&lt;PID&gt;</code> to store its previous state (since it is periodically executed). The binary will
+be cached by Linux, thus there is little performance penalty on this setup. The test machine was at 0.60% CPU while
+idle with no monitor, 0.86% CPU with the monitor running and 1.17% CPU with the tooltip open (due to Xorg activity,
+because the monitor always generates the tooltip, even while hidden).</li>
+
+<li>Of course, a true XFCE applet would also be nice... hoping that somebody forks this project!</li>
+
+</ul>
+
+</div> <!--page -->
+
+<div class="navbar">
+<div class="left title"><a href="/">HOMEPAGE</a></div>
+<div class="center title"><a class="newtab" href="https://www.archlinux.org/" target="_blank"> Arch Linux </a></div>
+<div class="right title"><a href="https://github.com/lightful/xfce-hkmon/">XFCE-HKMON on GitHub</a></div>
+</div>
+
+</body>
+</html>
