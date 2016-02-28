@@ -104,7 +104,7 @@ template <typename K, typename V> std::ostream& operator<<(std::ostream& out, co
     return out << '\n';
 }
 
-template <typename T> bool fromString(const std::string& from, T& to) { return std::istringstream(from) >> to; }
+template <typename T> bool fromString(const std::string& from, T& to) { return bool(std::istringstream(from) >> to); }
 
 template <> bool fromString(const std::string& from, std::string& to) { to = from; return true; }
 
