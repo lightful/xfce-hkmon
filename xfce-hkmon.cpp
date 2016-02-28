@@ -577,10 +577,10 @@ int main(int argc, char** argv)
     {
         if (selectedNetworkInterface.empty())
         {
-            auto highestTraffic = new_Network->interfaces.begin();
-            if (highestTraffic != new_Network->interfaces.end())
+            auto highestTraffic = new_Network->interfaces.cbegin();
+            if (highestTraffic != new_Network->interfaces.cend())
             {
-                for (auto nextIf = highestTraffic; ++nextIf != new_Network->interfaces.end();)
+                for (auto nextIf = highestTraffic; ++nextIf != new_Network->interfaces.cend();)
                 {
                     if (nextIf->first == "lo") continue;
                     if (nextIf->second.traffic() > highestTraffic->second.traffic()) highestTraffic = nextIf;
@@ -589,7 +589,7 @@ int main(int argc, char** argv)
             }
         }
 
-        for (auto itn = new_Network->interfaces.begin(); itn != new_Network->interfaces.end(); ++itn)
+        for (auto itn = new_Network->interfaces.cbegin(); itn != new_Network->interfaces.cend(); ++itn)
         {
             auto ito = old_Network->interfaces.find(itn->first);
             if (ito == old_Network->interfaces.end()) continue;
@@ -623,7 +623,7 @@ int main(int argc, char** argv)
         struct CpuStat { CPU::Number number; double percent; double ghz; };
         std::multimap<double, CpuStat> rankByGhzUsage;
         double cum_weighted_ghz = 0;
-        for (auto itn = new_CPU->cores.begin(); itn != new_CPU->cores.end(); ++itn)
+        for (auto itn = new_CPU->cores.cbegin(); itn != new_CPU->cores.cend(); ++itn)
         {
             if (itn->first < 0) continue;
             auto ito = old_CPU->cores.find(itn->first);
@@ -677,7 +677,7 @@ int main(int argc, char** argv)
                 if (ncpu.guestnice) dumpPercent("guest nice", diff.guestnice, ncpu.guestnice);
 
                 int maxCpu = 8;
-                for (auto itc = rankByGhzUsage.rbegin(); maxCpu-- && (itc != rankByGhzUsage.rend()); ++itc)
+                for (auto itc = rankByGhzUsage.crbegin(); maxCpu-- && (itc != rankByGhzUsage.crend()); ++itc)
                 {
                     reportDetail << "   " << std::fixed
                         << std::setprecision(2) << Padded<double> { 100, itc->second.percent } << "% cpu "
@@ -707,7 +707,7 @@ int main(int argc, char** argv)
 
     if (new_IO && old_IO && nsecsElapsed) // IO report
     {
-        for (auto nitd = new_IO->devices.begin(); nitd != new_IO->devices.end(); ++nitd)
+        for (auto nitd = new_IO->devices.cbegin(); nitd != new_IO->devices.cend(); ++nitd)
         {
             const IO::Device& device = nitd->second;
             auto prevdev = old_IO->devices.find(nitd->first);
@@ -769,7 +769,7 @@ int main(int argc, char** argv)
 
         if (!statByCategory.empty()) reportDetail << " Temperature: \n";
 
-        for (auto its = statByCategory.rbegin(); its != statByCategory.rend(); ++its)
+        for (auto its = statByCategory.crbegin(); its != statByCategory.crend(); ++its)
         {
             if (its->second.count == 1)
                 reportDetail << "    " << its->second.firstName << ": " << its->second.max / 1000 << "ºC \n";
