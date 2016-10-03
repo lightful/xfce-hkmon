@@ -78,9 +78,10 @@ following command:
 <ul>
 
 <li>The network interface shown in the panel is automatically selected (highest accumulated traffic). If you prefer
-another one, simply replace <code>NET</code> by its name (<code>eth0</code>, <code>ppp0</code>, etc) in the command
-line. The tooltip shows all the network interfaces with at least one byte transferred, and a mark signaling which
-one is being reported in the panel.</li>
+another one, simply add its name (<code>eth0</code>, <code>ppp0</code>, etc) to the command line (<code>NET</code>
+could be omitted). The tooltip shows all the network interfaces with at least one byte transferred, and a mark signaling
+which one is being reported in the panel. By default the speed is shown in bits per second (use <code>NET8</code>
+to select bytes).</li>
 
 <li>Likewise, only physical disks with data transferred since boot are reported.</li>
 
