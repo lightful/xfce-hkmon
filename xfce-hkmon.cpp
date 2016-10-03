@@ -39,7 +39,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define APP_VERSION "2.0"
+#define APP_VERSION "2.1"
 
 #define VA_STR(x) dynamic_cast<std::ostringstream const&>(std::ostringstream().flush() << x).str()
 
@@ -356,7 +356,11 @@ struct Network
         uint64_t traffic() const { return bytesRecv + bytesSent; }
     };
 
-    struct Bandwidth { int64_t bitsPerSecond; };
+    struct Bandwidth
+    {
+        enum class Unit { bit, byte } unit;
+        int64_t perSecond;
+    };
 
     std::map<Name, Interface> interfaces;
 
@@ -391,10 +395,11 @@ std::istream& operator>>(std::istream& in, Network::Interface& ifz)
     return in >> ifz.bytesRecv >> ifz.bytesSent;
 }
 
-std::ostream& operator<<(std::ostream& out, const Network::Bandwidth& data)
+std::ostream& operator<<(std::ostream& out, const Network::Bandwidth& speed)
 {
-    if (data.bitsPerSecond < MB_i) return out << data.bitsPerSecond / 1000 << " Kbps";
-    return out << std::fixed << std::setprecision(3) << data.bitsPerSecond / MB_f << " Mbps";
+    char unit = (speed.unit == Network::Bandwidth::Unit::bit)? 'b' : 'B';
+    if (speed.perSecond < MB_i) return out << speed.perSecond / 1000 << " K" << unit << "ps";
+    return out << std::fixed << std::setprecision(3) << speed.perSecond / MB_f << " M" << unit << "ps";
 }
 
 struct Health
@@ -499,6 +504,7 @@ int main(int argc, char** argv)
     std::shared_ptr<Memory>  new_Memory;
     std::shared_ptr<IO>      new_IO, old_IO;
     std::shared_ptr<Network> new_Network, old_Network;
+    Network::Bandwidth::Unit netSpeedUnit = Network::Bandwidth::Unit::bit;
     std::shared_ptr<Health>  new_Health;
     std::string selectedNetworkInterface;
 
@@ -510,6 +516,7 @@ int main(int argc, char** argv)
         if ((arg == "RAM"))  match++, new_Memory.reset(new Memory());
         if ((arg == "IO"))   match++, new_IO.reset(new IO());
         if ((arg == "NET"))  match++, new_Network.reset(new Network());
+        if ((arg == "NET8")) match++, new_Network.reset(new Network()), netSpeedUnit = Network::Bandwidth::Unit::byte;
         if ((arg == "TEMP")) match++, new_Health.reset(new Health());
         if (!match)
         {
@@ -601,13 +608,13 @@ int main(int argc, char** argv)
             auto dumpNet = [&](const char* iconIdle, const char* iconBusy, uint64_t newBytes, uint64_t oldBytes)
             {
                 int64_t delta = newBytes - oldBytes;
-                int64_t bps = 8 * delta / secsElapsed;
+                int64_t speed = (netSpeedUnit == Network::Bandwidth::Unit::byte? 1 : 8) * delta / secsElapsed;
                 const char* icon = delta? iconBusy : iconIdle;
                 reportDetail << "    " << icon << "  " << DataSize { newBytes };
-                if (bps > 0) reportDetail << " - " << Network::Bandwidth { bps };
+                if (speed > 0) reportDetail << " - " << Network::Bandwidth { netSpeedUnit, speed };
                 reportDetail << " \n";
                 if (isSelectedInterface)
-                    reportStd << std::setw(6) << Network::Bandwidth { bps } << " " << icon << " \n";
+                    reportStd << std::setw(6) << Network::Bandwidth { netSpeedUnit, speed } << " " << icon << " \n";
             };
 
             reportDetail << " " << itn->first << ": ";
