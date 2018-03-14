@@ -1,6 +1,6 @@
 /*
  * Hacker's Monitor for XFCE Generic Monitor applet
- * Copyright (C) 2015 Ciriaco Garcia de Celis
+ * Copyright (C) 2015-2018 Ciriaco Garcia de Celis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -508,17 +508,20 @@ int main(int argc, char** argv)
     std::shared_ptr<Health>  new_Health;
     std::string selectedNetworkInterface;
 
-    for (int i = 1, match; i < argc; i++)
+    bool singleLine = false;
+    int posRam = 0;
+    int posTemp = 0;
+    for (int i = 1; i < argc; i++)
     {
         std::string arg(argv[i]);
-        match = 0;
-        if ((arg == "CPU"))  match++, new_CPU.reset(new CPU());
-        if ((arg == "RAM"))  match++, new_Memory.reset(new Memory());
-        if ((arg == "IO"))   match++, new_IO.reset(new IO());
-        if ((arg == "NET"))  match++, new_Network.reset(new Network());
-        if ((arg == "NET8")) match++, new_Network.reset(new Network()), netSpeedUnit = Network::Bandwidth::Unit::byte;
-        if ((arg == "TEMP")) match++, new_Health.reset(new Health());
-        if (!match)
+        if      ((arg == "LINE")) singleLine = true;
+        else if ((arg == "CPU"))  new_CPU.reset(new CPU());
+        else if ((arg == "RAM"))  posRam = i, new_Memory.reset(new Memory());
+        else if ((arg == "IO"))   new_IO.reset(new IO());
+        else if ((arg == "NET"))  new_Network.reset(new Network());
+        else if ((arg == "NET8")) new_Network.reset(new Network()), netSpeedUnit = Network::Bandwidth::Unit::byte;
+        else if ((arg == "TEMP")) posTemp = i, new_Health.reset(new Health());
+        else
         {
             new_Network.reset(new Network());
             selectedNetworkInterface = argv[i];
@@ -584,15 +587,22 @@ int main(int argc, char** argv)
     {
         if (selectedNetworkInterface.empty())
         {
-            auto highestTraffic = new_Network->interfaces.cbegin();
-            if (highestTraffic != new_Network->interfaces.cend())
+            int64_t maxBandwidth = -1;
+            uint64_t selectedTraffic = 0;
+            for (auto itn = new_Network->interfaces.cbegin(); itn != new_Network->interfaces.cend(); ++itn)
             {
-                for (auto nextIf = highestTraffic; ++nextIf != new_Network->interfaces.cend();)
+                if (itn->first == "lo") continue;
+                auto ito = old_Network->interfaces.find(itn->first);
+                if (ito == old_Network->interfaces.end()) continue;
+                int64_t transferred = itn->second.bytesRecv - ito->second.bytesRecv;
+                transferred += itn->second.bytesSent - ito->second.bytesSent;
+                if (transferred < maxBandwidth) continue;
+                if ((transferred > maxBandwidth) || (itn->second.traffic() > selectedTraffic))
                 {
-                    if (nextIf->first == "lo") continue;
-                    if (nextIf->second.traffic() > highestTraffic->second.traffic()) highestTraffic = nextIf;
+                    maxBandwidth = transferred;
+                    selectedTraffic = itn->second.traffic();
+                    selectedNetworkInterface = itn->first;
                 }
-                selectedNetworkInterface = highestTraffic->first;
             }
         }
 
@@ -614,7 +624,8 @@ int main(int argc, char** argv)
                 if (speed > 0) reportDetail << " - " << Network::Bandwidth { netSpeedUnit, speed };
                 reportDetail << " \n";
                 if (isSelectedInterface)
-                    reportStd << std::setw(6) << Network::Bandwidth { netSpeedUnit, speed } << " " << icon << " \n";
+                    reportStd << std::setw(6) << Network::Bandwidth { netSpeedUnit, speed } << " " << icon
+                              << (singleLine? " " : " \n");
             };
 
             reportDetail << " " << itn->first << ": ";
@@ -697,7 +708,8 @@ int main(int argc, char** argv)
 
     if (new_Memory) // RAM report
     {
-        if (!new_Health && new_CPU) reportStd << " " << new_Memory->ram.available/1024 << "M\n";
+        if (new_CPU && (!posTemp || (posRam < posTemp)))
+            reportStd << " " << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
 
         reportDetail << " Memory " << new_Memory->ram.total/1024 << " MiB:\n"
             << Padded<uint64_t> { 1000000, new_Memory->ram.available/1024 } << " MiB available \n"
@@ -772,7 +784,8 @@ int main(int argc, char** argv)
             its->second.avg = (prevTotal + itt.second.tempMilliCelsius) / its->second.count;
         }
 
-        if (maxAbsTemp >= 0) reportStd << std::setw(4) << maxAbsTemp / 1000 << "ºC\n";
+        if (new_CPU && (maxAbsTemp >= 0) && (!posRam || (posTemp < posRam)))
+            reportStd << std::setw(4) << maxAbsTemp / 1000 << "ºC" << (singleLine? " " : "\n");
 
         if (!statByCategory.empty()) reportDetail << " Temperature: \n";
 

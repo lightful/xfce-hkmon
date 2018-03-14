@@ -1,2 +1,5 @@
+.settings/
+.cproject
+.project
 xfce-hkmon
 *.o

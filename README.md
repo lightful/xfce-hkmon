@@ -2,7 +2,7 @@
 
 ### Screenshot and doc
 
-See the project [web page](http://lightful.github.io/xfce-hkmon/).
+See the project [web page](https://lightful.github.io/xfce-hkmon/).
 
 ### Installation
 
