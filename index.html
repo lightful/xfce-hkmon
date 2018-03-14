@@ -52,7 +52,7 @@ speed direction, with the consequent delay potentially causing the data to chang
 
 <ol>
 
-<li>Download 
+<li>Download
 <a class="nowrap newtab" href="https://github.com/lightful/xfce-hkmon/blob/master/xfce-hkmon.cpp"
    target="_blank">xfce-hkmon.cpp</a>
 and compile it (you only need <span class="nowrap">gcc 4.6+</span> or clang installed):
@@ -77,11 +77,15 @@ following command:
 
 <ul>
 
-<li>The network interface shown in the panel is automatically selected (highest accumulated traffic). If you prefer
-another one, simply add its name (<code>eth0</code>, <code>ppp0</code>, etc) to the command line (<code>NET</code>
-could be omitted). The tooltip shows all the network interfaces with at least one byte transferred, and a mark signaling
-which one is being reported in the panel. By default the speed is shown in bits per second (use <code>NET8</code>
-to select bytes).</li>
+<li>When several options are combined, the panel vertical real estate required will grow. In case the panel
+is not wide enough, the optional <code>LINE</code> option allows switching into a fully horizontal layout.</li>
+
+<li>The network interface shown in the panel is automatically selected (the most active interface in the
+last interval, except for the loopback). If your system has several active interfaces and you prefer a concrete
+one, simply add its name (<code>eth0</code>, <code>ppp0</code>, etc) to the command line (<code>NET</code>
+could be omitted). The tooltip shows all the network interfaces with at least one byte transferred,
+and a mark signaling which one is being reported in the panel. By default the speed is shown in bits
+per second (use <code>NET8</code> to select bytes).</li>
 
 <li>Likewise, only physical disks with data transferred since boot are reported.</li>
 
@@ -99,9 +103,9 @@ could be reported).</li>
 <li>The temperature shown in the panel area is the highest read among all cores and sockets (if there are several
 cores or sockets, the tooltip groups them reporting the max/min/avg instead)</li>
 
-<li>The command line arguments mostly select the tooltip verbosity (RAM will be shown in the panel in place of the
-temperature when omitted, though). Old XFCE versions may not show the tooltip contents (only the application binary
-path) if too much data is on it.</li>
+<li>The command line arguments mostly select the tooltip verbosity. If the CPU is selected, either the temperature
+or the RAM will also appear in the panel at his side (the one first listed in the command line will be selected).
+Old XFCE versions may not show the tooltip contents (only the application binary path) if too much data is on it.</li>
 
 <li>The application writes temporary data in shared memory (SSD friendly) usually in
 <code>/run/user/&lt;PID&gt;</code> to store its previous state (since it is periodically executed). The binary will
