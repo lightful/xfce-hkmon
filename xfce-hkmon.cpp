@@ -624,7 +624,7 @@ int main(int argc, char** argv)
                 if (speed > 0) reportDetail << " - " << Network::Bandwidth { netSpeedUnit, speed };
                 reportDetail << " \n";
                 if (isSelectedInterface)
-                    reportStd << std::setw(6) << Network::Bandwidth { netSpeedUnit, speed } << " " << icon
+                    reportStd << std::setw(singleLine? 0 : 6) << Network::Bandwidth { netSpeedUnit, speed } << " " << icon
                               << (singleLine? " " : " \n");
             };
 
@@ -674,7 +674,7 @@ int main(int argc, char** argv)
                                  << "  (" << 100.0 * user_hz__sinceBoot / cpuTotalSinceBoot << "%) \n";
                 };
 
-                reportStd << std::setw(6) << std::fixed << std::setprecision(1) << usagePercent << "%";
+                reportStd << std::setw(singleLine? 0 : 6) << std::fixed << std::setprecision(1) << usagePercent << "%";
 
                 reportDetail << " CPU \u2699 " << std::fixed << std::setprecision(2) << usagePercent << "% \u2248 ";
 
@@ -709,7 +709,7 @@ int main(int argc, char** argv)
     if (new_Memory) // RAM report
     {
         if (new_CPU && (!posTemp || (posRam < posTemp)))
-            reportStd << " " << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
+            reportStd << (singleLine? "" : " ") << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
 
         reportDetail << " Memory " << new_Memory->ram.total/1024 << " MiB:\n"
             << Padded<uint64_t> { 1000000, new_Memory->ram.available/1024 } << " MiB available \n"
@@ -785,7 +785,7 @@ int main(int argc, char** argv)
         }
 
         if (new_CPU && (maxAbsTemp >= 0) && (!posRam || (posTemp < posRam)))
-            reportStd << std::setw(4) << maxAbsTemp / 1000 << "ºC" << (singleLine? " " : "\n");
+            reportStd << std::setw(singleLine? 0 : 4) << maxAbsTemp / 1000 << "ºC" << (singleLine? " " : "\n");
 
         if (!statByCategory.empty()) reportDetail << " Temperature: \n";
 
