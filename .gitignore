@@ -3,3 +3,4 @@
 .project
 xfce-hkmon
 *.o
+/.vscode/
